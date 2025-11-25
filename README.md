@@ -6,6 +6,15 @@ A aplicação é especialmente útil para áreas como arquitetura, design de int
 
 O usuário poderá visualizar, diretamente na tela VR do Meta Quest, uma lista lateral de objetos, realizar drag and drop e posicioná-los no ambiente com precisão, avaliando proporções, layout e ocupação do espaço.
 
+## Documentação
+
+  A documentação pode ser encontrada clicando no botao abaixo:
+
+  [![Button Click]][Link]
+
+  [Button Click]: https://img.shields.io/badge/Documentação-37a779?style=for-the-badge
+  [Link]: https://marioventuramedeiros.github.io/VR_LIM/category/semana-1
+
 ## 🧑‍🎓 | Integrantes:
 
 <div align="center">
