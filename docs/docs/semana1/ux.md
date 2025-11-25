@@ -1,3 +1,8 @@
+---
+sidebar_position: 1
+title: UX
+---
+
 # Ações e verbos envolvidos na experiência proposta
 
 A experiência proposta envolve uma combinação de ações abstratas, relacionadas à compreensão e exploração do ambiente, e ações práticas, ligadas à manipulação dos objetos em realidade aumentada.

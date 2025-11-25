@@ -1,3 +1,8 @@
+---
+sidebar_position: 1
+title: Referências
+---
+
 # Referências de projetos similares
 
 No contexto do desenvolvimento deste projeto, é fundamental analisar soluções já existentes que compartilhem temáticas e funcionalidades semelhantes. Esta análise permite não apenas identificar características positivas que podem servir de inspiração técnica e visual, mas também diagnosticar fragilidades e lacunas funcionais nessas aplicações. Ao compreender estas falhas e limitações, é possível traçar estratégias para superá-los e criar uma solução sólida para esta temática.

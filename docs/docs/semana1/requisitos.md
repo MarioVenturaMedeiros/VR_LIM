@@ -1,3 +1,8 @@
+---
+sidebar_position: 1
+title: Requisitos
+---
+
 # Especificação Técnica: Sistema de Visualização e Layout 3D
 
 ---
@@ -26,7 +31,7 @@ A tabela abaixo detalha os Requisitos Funcionais (RF) — o que o sistema deve f
 | **RNF-02** | Não Funcional | **Fluidez no controle** | A taxa de atualização (framerate) deve se manter estável durante a manipulação para evitar "stuttering" ou sensação de peso no controle. |
 | **RNF-03** | Não Funcional | **Tempo máximo de resposta (150ms)** | A latência entre o input do usuário e a reação visual na tela não deve exceder 150 milissegundos para garantir imersão. |
 | **RNF-04** | Não Funcional | **Feedback sensorial completo** | Uso obrigatório de código de cores (ex: vermelho para erro), avisos de UI e efeitos sonoros para confirmar ações ou alertar sobre colisões. |
-| **RNF-05** | Não Funcional | **Performance de importação (<30s)** | O processamento de novos ativos não deve bloquear a aplicação por mais de 30 segundos, garantindo agilidade no fluxo de trabalho. |
+| **RNF-05** | Não Funcional | **Performance de importação (menor que 30s)** | O processamento de novos ativos não deve bloquear a aplicação por mais de 30 segundos, garantindo agilidade no fluxo de trabalho. |
 
 ---
 
@@ -41,7 +46,7 @@ Nesta seção, correlacionamos os requisitos listados acima com as tarefas técn
 | **RF-03, RNF-03** | **Drag and drop** | Programação | **7** | Requer Raycasting preciso da câmera para o plano de chão e lógica de "ancoragem" do objeto ao cursor/dedo com resposta imediata. |
 | **RF-04** | **Rotação do objeto** | Programação | **5** | Manipulação de Quaternions ou Euler Angles. Complexidade média para garantir que a rotação seja intuitiva em relação à visão do usuário. |
 | **RF-06** | **Modelagem do espaço** | Programação | **7** | Criação de malhas procedurais simples ou instanciamento de paredes baseadas em medidas inseridas. |
-| **RF-01, RF-02** | **Modelagem dos modelos 3D** | Modelagem 3D | **2** ou **9** | **Nível 2:** Se utilizar assets prontos (importação simples).<br>**Nível 9:** Se a tarefa exigir modelagem, texturização e rigging manual de cada objeto. |
+| **RF-01, RF-02** | **Modelagem dos modelos 3D** | Modelagem 3D | **2** ou **9** | **Nível 2:** Se utilizar assets prontos (importação simples).<br></br>**Nível 9:** Se a tarefa exigir modelagem, texturização e rigging manual de cada objeto. |
 
 ---
 
