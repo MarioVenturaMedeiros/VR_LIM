@@ -1,5 +1,5 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
@@ -18,6 +18,7 @@ const config: Config = {
   projectName: 'VR_LIM',
 
   onBrokenLinks: 'throw',
+  onBrokenMarkdownLinks: 'warn',
 
   i18n: {
     defaultLocale: 'en',
@@ -29,14 +30,15 @@ const config: Config = {
       'classic',
       {
         docs: {
-          sidebarPath: './sidebars.ts',
+          // use require.resolve para garantir que o path seja resolvido corretamente em runtime
+          sidebarPath: require.resolve('./sidebars.ts'),
           editUrl:
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-          routeBasePath: '/',   // <-- corrigido
+          routeBasePath: '/', // site root
         },
         blog: false,
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: require.resolve('./src/css/custom.css'),
         },
       } satisfies Preset.Options,
     ],
@@ -44,6 +46,10 @@ const config: Config = {
 
   themeConfig: {
     image: 'img/docusaurus-social-card.jpg',
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
     colorMode: {
       respectPrefersColorScheme: true,
     },
@@ -75,7 +81,7 @@ const config: Config = {
           items: [
             {
               label: 'Inicio',
-              to: '/',   // <-- corrigido
+              to: '/', // página inicial da documentação
             },
           ],
         },
@@ -88,3 +94,23 @@ const config: Config = {
             },
             {
               label: 'Discord',
+              href: 'https://discord.gg/docusaurus',
+            },
+          ],
+        },
+        {
+          title: 'More',
+          items: [
+            {
+              label: 'GitHub',
+              href: 'https://github.com/MarioVenturaMedeiros/VR_LIM',
+            },
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} Mario Ventura Medeiros.`,
+    },
+  },
+};
+
+export default config;
