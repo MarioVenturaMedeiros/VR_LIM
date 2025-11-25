@@ -89,7 +89,7 @@ const config: Config = {
           items: [
             {
               label: 'Inicio',
-              to: '/',
+              to: '/VR_LIM',
             },
           ],
         },
