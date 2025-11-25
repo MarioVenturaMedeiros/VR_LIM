@@ -19,6 +19,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    # adicionar o environment requerido pela action de Pages
+    environment:
+      name: github-pages
+
     defaults:
       run:
         shell: bash
@@ -35,10 +39,10 @@ jobs:
 
       - name: Install and Build
         run: |
-          cd docs
           npm install react@18 react-dom@18
           npm install
           npm run build
+        # como já definimos working-directory em defaults, os comandos rodam em ./docs
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -46,7 +50,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/build
+          path: ./build    # caminho relativo a ./docs por causa do defaults
 
       - name: Deploy to GitHub Pages
         id: deployment
