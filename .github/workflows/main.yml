@@ -41,7 +41,7 @@ jobs:
           npm install
           npm run build
 
-      - name: Confirm build folder exists
+      - name: Confirm build folder exists (executa em ./docs por causa do defaults)
         run: ls -la build
 
       - name: Setup Pages
@@ -50,7 +50,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          # corrigido: path relativo ao root do repositório
+          path: ./docs/build
 
       - name: Deploy to GitHub Pages
         id: deployment
