@@ -54,20 +54,20 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'My Site',
+      title: 'VR LIM',
       logo: {
         alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        src: 'img/inteli_edu_logo.jpg',
       },
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Docs',
         },
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/MarioVenturaMedeiros/VR_LIM',
           label: 'GitHub',
           position: 'right',
         },
@@ -86,16 +86,19 @@ const config: Config = {
           ],
         },
         {
-          title: 'Community',
+          title: 'Integrantes',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'Isabelle Oliveira',
+              href: 'https://www.linkedin.com/in/isabellevoliveira342/',
             },
             {
-              label: 'Discord',
-              href: 'https://discord.gg/docusaurus',
+              label: 'Mario Ventura Medeiros',
+              href: 'https://www.linkedin.com/in/marioventuramedeiros/',
             },
+            {
+              label: 'Luiz Fernando Haddad Saad Villaça Leão',
+              href: 'https://www.linkedin.com/in/luiz-fernando-villaca-leao/',}
           ],
         },
         {
