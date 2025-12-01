@@ -43,10 +43,11 @@ Abaixo segue uma tabela com uma análise mais detalhada de cada opção.
 
 | Opção                       | Vantagens                                                                                     | Desvantagens                                                                                   |
 |-----------------------------|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
-| **Barra lateral**           | - Familiar para usuários de ferramentas 2D<br>- Escalável verticalmente                       | - Prejudica a visão periférica<br>- Reduz imersão em VR<br>- Ocupa área lateral significativa  |
-| **Barra horizontal**        | - Não compromete a visão periférica<br>- Fácil visualização de itens<br>- Ótima para filtros<br>- Boa para VR e navegação por gestos<br>- Mantém a visão completa do ambiente | - Pode exigir rolagem horizontal com muitos itens<br>- Pode competir com elementos próximos ao "chão" em VR |
-| **Submenu pop-up**          | - Permite visualizar muitos itens de uma vez<br>- Suporta filtros complexos                   | - Oculta completamente o ambiente<br>- Quebra a imersão<br>- Exige abrir/fechar repetidamente  |
-| **Roda de objetos (radial)**| - Seleção rápida quando o catálogo é pequeno<br>- Ocupa pouco espaço                          | - Escalabilidade limitada<br>- Pode saturar visualmente<br>- Fica confuso com muitas categorias |
+| **Barra lateral**           | - Familiar para usuários de ferramentas 2D<br />- Escalável verticalmente                       | - Prejudica a visão periférica<br />- Reduz imersão em VR<br />- Ocupa área lateral significativa  |
+| **Barra horizontal**        | - Não compromete a visão periférica<br />- Fácil visualização de itens<br />- Ótima para filtros<br />- Boa para VR e navegação por gestos<br />- Mantém a visão completa do ambiente | - Pode exigir rolagem horizontal com muitos itens<br />- Pode competir com elementos próximos ao "chão" em VR |
+| **Submenu pop-up**          | - Permite visualizar muitos itens de uma vez<br />- Suporta filtros complexos                   | - Oculta completamente o ambiente<br />- Quebra a imersão<br />- Exige abrir/fechar repetidamente  |
+| **Roda de objetos (radial)**| - Seleção rápida quando o catálogo é pequeno<br />- Ocupa pouco espaço                          | - Escalabilidade limitada<br />- Pode saturar visualmente<br />- Fica confuso com muitas categorias |
+
 
 
 mesmo que a barra horizontal seja a mais adequada, ela não é perfeita. Como dito na tabela, ela pode competir com elementos próximos ao chão. Para reduzir ao máximo essa desvantagem, foi decidido que essa barra horizontal será vazada, ou seja, transparente, só para dar forma para o usuário para identificar a HUD, porém afetando menor possível a sua experiência.

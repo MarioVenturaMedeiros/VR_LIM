@@ -17,7 +17,7 @@ Para a ideação do projeto, foram analisados sistemas já existentes de inspira
 3- Barra de seleção horizontal - Clash of Clans/The Sims 4/Genshin impact -> Barra horizontal e contendo imagem do objeto e filtros em cima.
 
 # Inspiração de poiscionamento de objetos
-![placement_examplev](/img/placement_examplev.png)
+![placement_examplev](/img/placement_example.png)
 
 1- Posicionamento - Palworld -> Visão de o que está sendo posicionado, em destaque para se consegue ser posicionado naquela região ou não.
 
