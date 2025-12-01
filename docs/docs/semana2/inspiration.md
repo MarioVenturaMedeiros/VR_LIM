@@ -1,9 +1,9 @@
 ---
 sidebar_position: 1
-title:  Level Design
+title:  Painel de Referências
 ---
 
-# Introdução
+# Painel de Referências
 
 Para a ideação do projeto, foram analisados sistemas já existentes de inspiração para a UI. Sendo assim, foram escolhidos 4 divisões que cada uma tem sua inspiração:
 
