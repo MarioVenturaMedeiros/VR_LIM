@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Menu Inicial AR</title>
+
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+      a-scene { height: 100%; width: 100%; display: block; }
+    </style>
+  </head>
+
+  <body>
+    <a-scene
+      embedded
+      vr-mode-ui="enabled: false"
+      renderer="colorManagement: true"
+      cursor="rayOrigin: mouse"
+    >
+      <a-assets>
+        <canvas id="bgCanvas" width="512" height="860"></canvas>
+        <canvas id="btnCanvas" width="512" height="180"></canvas>
+      </a-assets>
+
+      <a-sky color="#D0D0D0"></a-sky>
+
+      <a-entity camera position="0 1.6 0" look-controls></a-entity>
+
+      <!-- Controllers for Quest (laser + UI interaction) -->
+      <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
+      <a-entity id="leftHand" laser-controls="hand: left"></a-entity>
+
+      <a-entity position="0 1.5 -2">
+        
+        <a-plane 
+          id="fundoMenu"
+          width="1.3" height="2.2" 
+          material="src: #bgCanvas; transparent: true; opacity: 1"
+          position="0 0 0"
+        ></a-plane>
+
+        <a-entity
+          id="btnNovo"
+          geometry="primitive: plane; width: 1; height: 0.35"
+          material="src: #btnCanvas; transparent: true; color: #ffffff; opacity: 0.2"
+          position="0 0.8 0.01"
+          class="clickable"
+          event-set__enter="_event: mouseenter; material.color: #000000; material.opacity: 0.4"
+          event-set__leave="_event: mouseleave; material.color: #ffffff; material.opacity: 0.2"
+        >
+          <a-text value="Novo Design" align="center" color="white" width="2" position="0 -0.06 0" font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Regular.json" shader="msdf"></a-text>
+        </a-entity>
+
+        <a-entity
+          id="btnSalvos"
+          geometry="primitive: plane; width: 1; height: 0.35"
+          material="src: #btnCanvas; transparent: true; color: #ffffff; opacity: 0.2"
+          position="0 0.3 0.01"
+          class="clickable"
+          event-set__enter="_event: mouseenter; material.color: #000000; material.opacity: 0.4"
+          event-set__leave="_event: mouseleave; material.color: #ffffff; material.opacity: 0.2"
+        >
+          <a-text value="Designs Salvos" align="center" color="white" width="2" position="0 -0.06 0" font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Regular.json" shader="msdf"></a-text>
+        </a-entity>
+
+        <a-entity
+          id="btnImport"
+          geometry="primitive: plane; width: 1; height: 0.35"
+          material="src: #btnCanvas; transparent: true; color: #ffffff; opacity: 0.2"
+          position="0 -0.2 0.01"
+          class="clickable"
+          event-set__enter="_event: mouseenter; material.color: #000000; material.opacity: 0.4"
+          event-set__leave="_event: mouseleave; material.color: #ffffff; material.opacity: 0.2"
+        >
+          <a-text value="Importar" align="center" color="white" width="2" position="0 -0.06 0" font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Regular.json" shader="msdf"></a-text>
+        </a-entity>
+
+        <a-entity
+          id="btnConfig"
+          geometry="primitive: plane; width: 1; height: 0.35"
+          material="src: #btnCanvas; transparent: true; color: #ffffff; opacity: 0.2"
+          position="0 -0.7 0.01"
+          class="clickable"
+          event-set__enter="_event: mouseenter; material.color: #000000; material.opacity: 0.4"
+          event-set__leave="_event: mouseleave; material.color: #ffffff; material.opacity: 0.2"
+        >
+          <a-text value="Configuracoes" align="center" color="white" width="2" position="0 -0.06 0" font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Regular.json" shader="msdf"></a-text>
+        </a-entity>
+      </a-entity>
+
+      <script>
+        // componente para mapear trigger / botão A do Quest para UI (emite 'click')
+        AFRAME.registerComponent('quest-ui', {
+          init: function () {
+            this.onPress = this.onPress.bind(this);
+            this.el.addEventListener('triggerdown', this.onPress);
+            this.el.addEventListener('abuttondown', this.onPress);
+          },
+
+          onPress: function () {
+            const raycaster = this.el.components.raycaster;
+            if (!raycaster || !raycaster.intersections.length) return;
+            const targetEl = raycaster.intersections[0].object.el;
+            if (!targetEl) return;
+            if (targetEl.classList.contains('clickable') || targetEl.classList.contains('ui-button')) {
+              targetEl.emit('click');
+            }
+          }
+        });
+
+        window.addEventListener('load', () => {
+          const bgCanvas = document.getElementById('bgCanvas');
+          const bgCtx = bgCanvas.getContext('2d');
+          bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+          bgCtx.fillStyle = 'rgba(0, 0, 0, 0.35)'; 
+          bgCtx.beginPath();
+          bgCtx.roundRect(0, 0, bgCanvas.width, bgCanvas.height, 40);
+          bgCtx.fill();
+          
+          const fundo = document.getElementById('fundoMenu');
+          if(fundo.components.material) fundo.components.material.material.map.needsUpdate = true;
+
+          const btnCanvas = document.getElementById('btnCanvas');
+          const btnCtx = btnCanvas.getContext('2d');
+          btnCtx.clearRect(0, 0, btnCanvas.width, btnCanvas.height);
+          btnCtx.fillStyle = '#FFFFFF'; 
+          btnCtx.beginPath();
+          btnCtx.roundRect(0, 0, btnCanvas.width, btnCanvas.height, 60); 
+          btnCtx.fill();
+
+          setTimeout(() => {
+             const botoes = ['btnNovo', 'btnSalvos', 'btnImport', 'btnConfig'];
+             botoes.forEach(id => {
+               const el = document.getElementById(id);
+               if(el && el.components.material && el.components.material.material.map) {
+                 el.components.material.material.map.needsUpdate = true;
+               }
+             });
+          }, 500);
+
+          // adicionar redirecionamento ao clicar em "Novo Design"
+          const btnNovoEl = document.getElementById('btnNovo');
+          if (btnNovoEl) {
+            btnNovoEl.addEventListener('click', () => {
+              window.location.href = 'lim.html';
+            });
+            btnNovoEl.addEventListener('touchstart', () => {
+              window.location.href = 'lim.html';
+            });
+          }
+
+          // Anexa o componente de UI ao controlador direito para suportar Quest
+          // (se o controlador já existir na cena, aplica; caso contrário, o component será aplicado quando o entity for criado)
+          const rightHand = document.querySelector('#rightHand');
+          if (rightHand) rightHand.setAttribute('quest-ui', '');
+        });
+      </script>
+    </a-scene>
+  </body>
+</html>
