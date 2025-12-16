@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tutorial - VR LIM</title>
+
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+    <script src="controller.js"></script>
+
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+      a-scene { height: 100%; width: 100%; display: block; }
+    </style>
+  </head>
+
+  <body>
+    <a-scene
+      embedded
+      vr-mode-ui="enabled: false"
+      renderer="colorManagement: true"
+      cursor="rayOrigin: mouse"
+    >
+      <a-assets>
+        <canvas id="bgCanvas" width="512" height="1200"></canvas>
+        <canvas id="btnCanvas" width="512" height="180"></canvas>
+        <img id="controllerImg" src="mapping.png" crossorigin="anonymous">
+      </a-assets>
+
+      <a-sky color="#D0D0D0"></a-sky>
+
+      <a-entity camera position="0 1.6 0" look-controls></a-entity>
+
+      <!-- Controllers for Quest (laser + UI interaction) -->
+      <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .clickable" quest-grab></a-entity>
+      <a-entity id="leftHand" laser-controls="hand: left"></a-entity>
+
+      <a-entity position="0 2 -2.5">
+        
+        <!-- Tutorial Panel Background -->
+        <a-plane 
+          id="fundoTutorial"
+          width="2" height="3" 
+          material="src: #bgCanvas; transparent: true; opacity: 1"
+          position="0 0 0"
+        ></a-plane>
+
+        <!-- Title -->
+        <a-text 
+          value="Tutorial - Controles VR" 
+          align="center" 
+          color="white" 
+          width="3.5" 
+          position="0 1.2 0.01"
+          font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Bold.json"
+          shader="msdf"
+        ></a-text>
+
+        <!-- Controller Image -->
+        <a-plane
+          id="controllerImage"
+          width="1.5"
+          height="1.5"
+          material="src: #controllerImg; transparent: true"
+          position="0 0.45 0.01"
+        ></a-plane>
+
+        <!-- Instructions -->
+        <a-text 
+          value="R2 / A:" 
+          align="left" 
+          color="white" 
+          width="3" 
+          position="-0.85 -0.5 0.01"
+          font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Bold.json"
+          shader="msdf"
+        ></a-text>
+        <a-text 
+          value="Pegar e colocar objetos" 
+          align="left" 
+          color="#CCCCCC" 
+          width="3" 
+          position="-0.85 -0.65 0.01"
+          font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Regular.json"
+          shader="msdf"
+        ></a-text>
+
+        <a-text 
+          value="R1:" 
+          align="left" 
+          color="white" 
+          width="3" 
+          position="-0.85 -0.9 0.01"
+          font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Bold.json"
+          shader="msdf"
+        ></a-text>
+        <a-text 
+          value="Rotacionar o objeto" 
+          align="left" 
+          color="#CCCCCC" 
+          width="3" 
+          position="-0.85 -1.05 0.01"
+          font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Regular.json"
+          shader="msdf"
+        ></a-text>
+
+        <a-text 
+          value="L1:" 
+          align="left" 
+          color="white" 
+          width="3" 
+          position="-0.85 -1.3 0.01"
+          font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Bold.json"
+          shader="msdf"
+        ></a-text>
+        <a-text 
+          value="Mover" 
+          align="left" 
+          color="#CCCCCC" 
+          width="3" 
+          position="-0.85 -1.45 0.01"
+          font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Regular.json"
+          shader="msdf"
+        ></a-text>
+
+        <!-- OK Button -->
+        <a-entity
+          id="btnOK"
+          geometry="primitive: plane; width: 1; height: 0.35"
+          material="src: #btnCanvas; transparent: true; color: #4CAF50; opacity: 0.8"
+          position="0 -1.9 0.01"
+          class="clickable"
+          event-set__enter="_event: mouseenter; material.color: #45a049; material.opacity: 1"
+          event-set__leave="_event: mouseleave; material.color: #4CAF50; material.opacity: 0.8"
+        >
+          <a-text value="OK - Iniciar" align="center" color="white" width="2" position="0 -0.06 0" font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/opensans/OpenSans-Bold.json" shader="msdf"></a-text>
+        </a-entity>
+      </a-entity>
+
+      <script>
+        // componente para mapear trigger / botão A do Quest para UI (emite 'click')
+        AFRAME.registerComponent('quest-ui', {
+          init: function () {
+            this.onPress = this.onPress.bind(this);
+            this.el.addEventListener('triggerdown', this.onPress);
+            this.el.addEventListener('abuttondown', this.onPress);
+          },
+
+          onPress: function () {
+            const raycaster = this.el.components.raycaster;
+            if (!raycaster || !raycaster.intersections.length) return;
+            const targetEl = raycaster.intersections[0].object.el;
+            if (!targetEl) return;
+            if (targetEl.classList.contains('clickable') || targetEl.classList.contains('ui-button')) {
+              targetEl.emit('click');
+            }
+          }
+        });
+
+        window.addEventListener('load', () => {
+          // Draw background panel
+          const bgCanvas = document.getElementById('bgCanvas');
+          const bgCtx = bgCanvas.getContext('2d');
+          bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+          bgCtx.fillStyle = 'rgba(0, 0, 0, 0.35)'; 
+          bgCtx.beginPath();
+          bgCtx.roundRect(0, 0, bgCanvas.width, bgCanvas.height, 40);
+          bgCtx.fill();
+          
+          const fundo = document.getElementById('fundoTutorial');
+          if(fundo.components.material) fundo.components.material.material.map.needsUpdate = true;
+
+          // Draw button background
+          const btnCanvas = document.getElementById('btnCanvas');
+          const btnCtx = btnCanvas.getContext('2d');
+          btnCtx.clearRect(0, 0, btnCanvas.width, btnCanvas.height);
+          btnCtx.fillStyle = '#FFFFFF'; 
+          btnCtx.beginPath();
+          btnCtx.roundRect(0, 0, btnCanvas.width, btnCanvas.height, 60); 
+          btnCtx.fill();
+
+          setTimeout(() => {
+            const btnOK = document.getElementById('btnOK');
+            if(btnOK && btnOK.components.material && btnOK.components.material.material.map) {
+              btnOK.components.material.material.map.needsUpdate = true;
+            }
+          }, 500);
+
+          // OK button click handler - go to lim.html and then activate VR mode
+          const btnOKEl = document.getElementById('btnOK');
+          if (btnOKEl) {
+            btnOKEl.addEventListener('click', () => {
+              // Store flag to enter VR mode after page loads
+              sessionStorage.setItem('enterVRMode', 'true');
+              window.location.href = 'lim.html';
+            });
+            btnOKEl.addEventListener('touchstart', () => {
+              sessionStorage.setItem('enterVRMode', 'true');
+              window.location.href = 'lim.html';
+            });
+          }
+
+          // Attach quest-ui component to right controller
+          const rightHand = document.querySelector('#rightHand');
+          if (rightHand) rightHand.setAttribute('quest-ui', '');
+        });
+      </script>
+    </a-scene>
+  </body>
+</html>
