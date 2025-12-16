@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Tutorial - VR LIM</title>
+    <title>Tutorial - LIM</title>
 
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
@@ -10,6 +10,9 @@
 
     <style>
       html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+      body {
+        background: linear-gradient(90deg, #dbf26e, #61efff);
+      }
       a-scene { height: 100%; width: 100%; display: block; }
     </style>
   </head>
@@ -18,7 +21,7 @@
     <a-scene
       embedded
       vr-mode-ui="enabled: false"
-      renderer="colorManagement: true"
+      renderer="colorManagement: true; alpha: true"
       cursor="rayOrigin: mouse"
     >
       <a-assets>
@@ -26,8 +29,6 @@
         <canvas id="btnCanvas" width="512" height="180"></canvas>
         <img id="controllerImg" src="mapping.png" crossorigin="anonymous">
       </a-assets>
-
-      <a-sky color="#D0D0D0"></a-sky>
 
       <a-entity camera position="0 1.6 0" look-controls></a-entity>
 
@@ -40,7 +41,7 @@
         <!-- Tutorial Panel Background -->
         <a-plane 
           id="fundoTutorial"
-          width="2" height="3" 
+          width="2.50" height="3" 
           material="src: #bgCanvas; transparent: true; opacity: 1"
           position="0 0 0"
         ></a-plane>
@@ -59,7 +60,7 @@
         <!-- Controller Image -->
         <a-plane
           id="controllerImage"
-          width="1.5"
+          width="2.25"
           height="1.5"  
           material="src: #controllerImg;"
           position="0 0.45 0.01"
