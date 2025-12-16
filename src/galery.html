@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria de Assets</title>
+    <!-- Importando o model-viewer para exibir arquivos .glb -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+        .gallery-card {
+            background: white;
+            width: 90%;
+            max-width: 1000px;
+            height: 80vh;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 28px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #666;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+        .close-btn:hover {
+            color: #000;
+        }
+        .content-area {
+            flex: 1;
+            display: flex;
+            gap: 40px;
+            overflow: hidden; /* Prevents overflow if model is large */
+        }
+        .info-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 20px;
+        }
+        .info-panel h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .info-panel .description {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .info-panel .filename {
+            font-family: monospace;
+            background: #eee;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: #666;
+            display: inline-block;
+        }
+        .viewer-panel {
+            flex: 2;
+            background-color: #fafafa;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: transparent;
+        }
+        .navigation-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 0 20px;
+        }
+        .nav-arrow {
+            font-size: 40px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #333;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+        .nav-arrow:hover {
+            transform: scale(1.2);
+            color: #000;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .tag {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: white;
+            background-color: #666; /* Default, will be overridden */
+            transition: transform 0.2s;
+        }
+        .tag:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .content-area {
+                flex-direction: column-reverse;
+            }
+            .info-panel {
+                padding-left: 0;
+                text-align: center;
+            }
+            .gallery-card {
+                height: 95vh;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="gallery-card">
+    <!-- Botão de fechar (X) -->
+    <button class="close-btn" onclick="history.back()" title="Fechar">✕</button>
+    
+    <div class="content-area">
+        <!-- Painel de Informações (Esquerda) -->
+        <div class="info-panel">
+            <h2 id="asset-name">Nome do Asset</h2>
+            <div class="description" id="asset-desc">
+                Descrição detalhada do asset aparecerá aqui.
+            </div>
+            <div>
+                <span class="filename" id="asset-file">arquivo.glb</span>
+            </div>
+            <div class="tags-container" id="asset-tags">
+                <!-- Tags will be injected here -->
+            </div>
+        </div>
+
+        <!-- Visualizador 3D (Direita/Centro) -->
+        <div class="viewer-panel">
+            <model-viewer 
+                id="viewer"
+                src="" 
+                alt="Modelo 3D" 
+                auto-rotate 
+                camera-controls
+                shadow-intensity="1"
+                exposure="1">
+            </model-viewer>
+        </div>
+    </div>
+
+    <!-- Setas de Navegação (Baixo) -->
+    <div class="navigation-controls">
+        <button class="nav-arrow" id="prev-btn" title="Anterior">◁</button>
+        <button class="nav-arrow" id="next-btn" title="Próximo">▷</button>
+    </div>
+</div>
+
+<script>
+    // Lista de assets disponíveis
+    const assets = [
+        {
+            name: "Cama",
+            description: "Uma cama confortável modelada em 3D. Ideal para cenas de quarto ou descanso.",
+            file: "bed.glb",
+            model: "./bed.glb",
+            theme: "#3f51b5", // Indigo
+            background: "#e8eaf6", // Light Indigo
+            categories: ["Mobília", "Quarto", "Conforto"]
+        },
+        {
+            name: "Mesa",
+            description: "Uma mesa de madeira robusta. Perfeita para ambientes de jantar ou escritório.",
+            file: "table.glb",
+            model: "./table.glb",
+            theme: "#795548", // Brown
+            background: "#efebe9", // Light Brown
+            categories: ["Mobília", "Escritório", "Madeira"]
+        },
+        {
+            name: "Cadeira",
+            description: "Uma cadeira simples e funcional.",
+            file: "chair.glb",
+            model: "./chair.glb",
+            theme: "#d2b48c", // Tan
+            background: "#faf0e6", // Light Tan
+            categories: ["Mobília", "Assento", "Decoração"]
+        }
+    ];
+
+    let currentIndex = 0;
+
+    // Elementos do DOM
+    const nameEl = document.getElementById('asset-name');
+    const descEl = document.getElementById('asset-desc');
+    const fileEl = document.getElementById('asset-file');
+    const tagsEl = document.getElementById('asset-tags');
+    const viewerEl = document.getElementById('viewer');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    // Função para atualizar a tela com o asset atual
+    function updateDisplay() {
+        const asset = assets[currentIndex];
+        
+        // Atualiza textos com animação simples de fade (opcional, mas legal)
+        nameEl.textContent = asset.name;
+        descEl.textContent = asset.description;
+        fileEl.textContent = asset.file;
+        
+        // Atualiza tags
+        tagsEl.innerHTML = ''; // Limpa tags anteriores
+        if (asset.categories) {
+            asset.categories.forEach(cat => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = cat;
+                tag.style.backgroundColor = asset.theme; // Usa a cor do tema para a tag
+                tagsEl.appendChild(tag);
+            });
+        }
+        
+        // Atualiza o modelo 3D
+        viewerEl.src = asset.model;
+        viewerEl.alt = `Modelo 3D de ${asset.name}`;
+
+        // Apply Theme Colors
+        document.body.style.backgroundColor = asset.background;
+        nameEl.style.color = asset.theme;
+        
+        // Update arrows color
+        prevBtn.style.color = asset.theme;
+        nextBtn.style.color = asset.theme;
+
+        // Update filename tag style
+        fileEl.style.color = asset.theme;
+        fileEl.style.backgroundColor = asset.background;
+        fileEl.style.border = `1px solid ${asset.theme}`;
+    }
+
+    // Event Listeners para navegação
+    prevBtn.addEventListener('click', () => {
+        currentIndex = (currentIndex - 1 + assets.length) % assets.length;
+        updateDisplay();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        currentIndex = (currentIndex + 1) % assets.length;
+        updateDisplay();
+    });
+
+    // Inicializa a tela
+    updateDisplay();
+</script>
+
+</body>
+</html>
