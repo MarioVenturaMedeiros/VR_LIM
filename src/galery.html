@@ -108,6 +108,25 @@
             transform: scale(1.2);
             color: #000;
         }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .tag {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: white;
+            background-color: #666; /* Default, will be overridden */
+            transition: transform 0.2s;
+        }
+        .tag:hover {
+            transform: translateY(-2px);
+        }
         
         /* Responsividade para telas menores */
         @media (max-width: 768px) {
@@ -141,6 +160,9 @@
             <div>
                 <span class="filename" id="asset-file">arquivo.glb</span>
             </div>
+            <div class="tags-container" id="asset-tags">
+                <!-- Tags will be injected here -->
+            </div>
         </div>
 
         <!-- Visualizador 3D (Direita/Centro) -->
@@ -171,19 +193,28 @@
             name: "Cama",
             description: "Uma cama confortável modelada em 3D. Ideal para cenas de quarto ou descanso.",
             file: "bed.glb",
-            model: "./bed.glb"
+            model: "./bed.glb",
+            theme: "#3f51b5", // Indigo
+            background: "#e8eaf6", // Light Indigo
+            categories: ["Mobília", "Quarto", "Conforto"]
         },
         {
             name: "Mesa",
             description: "Uma mesa de madeira robusta. Perfeita para ambientes de jantar ou escritório.",
             file: "table.glb",
-            model: "./table.glb"
+            model: "./table.glb",
+            theme: "#795548", // Brown
+            background: "#efebe9", // Light Brown
+            categories: ["Mobília", "Escritório", "Madeira"]
         },
         {
             name: "Cadeira",
             description: "Uma cadeira simples e funcional.",
             file: "chair.glb",
-            model: "./chair.glb"
+            model: "./chair.glb",
+            theme: "#d2b48c", // Tan
+            background: "#faf0e6", // Light Tan
+            categories: ["Mobília", "Assento", "Decoração"]
         }
     ];
 
@@ -193,6 +224,7 @@
     const nameEl = document.getElementById('asset-name');
     const descEl = document.getElementById('asset-desc');
     const fileEl = document.getElementById('asset-file');
+    const tagsEl = document.getElementById('asset-tags');
     const viewerEl = document.getElementById('viewer');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
@@ -206,9 +238,34 @@
         descEl.textContent = asset.description;
         fileEl.textContent = asset.file;
         
+        // Atualiza tags
+        tagsEl.innerHTML = ''; // Limpa tags anteriores
+        if (asset.categories) {
+            asset.categories.forEach(cat => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = cat;
+                tag.style.backgroundColor = asset.theme; // Usa a cor do tema para a tag
+                tagsEl.appendChild(tag);
+            });
+        }
+        
         // Atualiza o modelo 3D
         viewerEl.src = asset.model;
         viewerEl.alt = `Modelo 3D de ${asset.name}`;
+
+        // Apply Theme Colors
+        document.body.style.backgroundColor = asset.background;
+        nameEl.style.color = asset.theme;
+        
+        // Update arrows color
+        prevBtn.style.color = asset.theme;
+        nextBtn.style.color = asset.theme;
+
+        // Update filename tag style
+        fileEl.style.color = asset.theme;
+        fileEl.style.backgroundColor = asset.background;
+        fileEl.style.border = `1px solid ${asset.theme}`;
     }
 
     // Event Listeners para navegação
