@@ -6,6 +6,7 @@
     <title>VR Room — Auto HUD Bar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.min.js"></script>
 
     <script>
         /* -----------------------------------------------------
@@ -71,6 +72,18 @@
             init() {
                 const ground = document.querySelector(".floor");
                 this.groundY = ground?.getAttribute("position")?.y ?? 0;
+
+                if (this.el.getAttribute("dynamic-body")) {
+                    this.el.removeAttribute("dynamic-body");
+                    this.hadPhysics = true;
+                }
+            },
+
+            remove() {
+                if (this.hadPhysics) {
+                    // Restaurar como box para consistência e performance
+                    this.el.setAttribute("dynamic-body", "shape: box; mass: 2");
+                }
             },
 
             tick() {
@@ -149,6 +162,8 @@
                         const box = new THREE.Box3().setFromObject(obj.object3D);
                         obj.dataset.bottomOffset = -box.min.y;
                         obj.setAttribute("position", { x: 0, y: -box.min.y, z: -2 });
+                        // Usando shape: box para evitar travamentos ao calcular colisão de malhas complexas (hull)
+                        obj.setAttribute("dynamic-body", "shape: box; mass: 2");
                     });
 
                     document.querySelector("a-scene").appendChild(obj);
@@ -189,7 +204,7 @@
 </head>
 
 <body>
-    <a-scene embedded raycaster="objects:.clickable">
+    <a-scene embedded raycaster="objects:.clickable" physics="debug: false; gravity: -9.8">
 
         <a-assets>
             <a-asset-item id="chair" src="chair.glb"></a-asset-item>
@@ -201,14 +216,15 @@
 
         <!-- FLOOR (BROWN-GRAY WOOD) -->
         <a-plane class="walkable floor" rotation="-90 0 0" width="20" height="20"
-            material="src:#woodTex; repeat:6 6; color:#8A8175; roughness:0.9">
+            material="src:#woodTex; repeat:6 6; color:#8A8175; roughness:0.9"
+            static-body>
         </a-plane>
 
         <!-- WALLS -->
-        <a-plane position="0 1.5 -10" width="20" height="3" color="#B3B3B3"></a-plane>
-        <a-plane position="0 1.5 10" rotation="0 180 0" width="20" height="3" color="#B3B3B3"></a-plane>
-        <a-plane position="-10 1.5 0" rotation="0 90 0" width="20" height="3" color="#AAAAAA"></a-plane>
-        <a-plane position="10 1.5 0" rotation="0 -90 0" width="20" height="3" color="#AAAAAA"></a-plane>
+        <a-plane position="0 1.5 -10" width="20" height="3" color="#B3B3B3" static-body></a-plane>
+        <a-plane position="0 1.5 10" rotation="0 180 0" width="20" height="3" color="#B3B3B3" static-body></a-plane>
+        <a-plane position="-10 1.5 0" rotation="0 90 0" width="20" height="3" color="#AAAAAA" static-body></a-plane>
+        <a-plane position="10 1.5 0" rotation="0 -90 0" width="20" height="3" color="#AAAAAA" static-body></a-plane>
 
         <!-- WINDOW WITH GRID -->
         <a-entity position="0 1.6 -9.98">
