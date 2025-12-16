@@ -1,319 +1,249 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
-    <title>Drag by Controller (Quest) — With Z Movement (floor snap)</title>
+    <title>VR Room — Auto HUD Bar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
     <script>
-    /* -----------------------------------------------------
-        SIMPLE TELEPORT (Custom implementation)
-    ----------------------------------------------------- */
-    AFRAME.registerComponent("simple-teleport", {
-        init: function () {
-            this.marker = document.createElement("a-entity");
-            this.marker.setAttribute("geometry", "primitive: ring; radiusInner: 0.15; radiusOuter: 0.2");
-            this.marker.setAttribute("material", "color: #000; shader: flat; opacity: 0.8");
-            this.marker.setAttribute("rotation", "-90 0 0");
-            this.marker.setAttribute("visible", false);
-            this.el.sceneEl.appendChild(this.marker);
+        /* -----------------------------------------------------
+           SIMPLE TELEPORT
+        ----------------------------------------------------- */
+        AFRAME.registerComponent("simple-teleport", {
+            init() {
+                this.marker = document.createElement("a-entity");
+                this.marker.setAttribute("geometry", "primitive:ring; radiusInner:0.15; radiusOuter:0.2");
+                this.marker.setAttribute("material", "color:#000; opacity:0.8; shader:flat");
+                this.marker.setAttribute("rotation", "-90 0 0");
+                this.marker.setAttribute("visible", false);
+                this.el.sceneEl.appendChild(this.marker);
 
-            this.isAiming = false;
-            this.lastHit = null;
-
-            this.onAxisMove = this.onAxisMove.bind(this);
-            this.el.addEventListener("axismove", this.onAxisMove);
-        },
-
-        onAxisMove: function (e) {
-            const axis = e.detail.axis;
-            if (!axis) return;
-
-            const y = axis.length > 3 ? axis[3] : axis[1];
-            
-            if (y < -0.7 && !this.isAiming) {
-                this.isAiming = true;
-                this.el.setAttribute("raycaster", "showLine", true);
-            } 
-            else if (y > -0.1 && this.isAiming) {
-                this.teleport();
                 this.isAiming = false;
-                this.el.setAttribute("raycaster", "showLine", false);
-                this.marker.setAttribute("visible", false);
-            }
-        },
-
-        tick: function () {
-            if (!this.isAiming) return;
-
-            const raycaster = this.el.components.raycaster;
-            if (!raycaster) return;
-
-            const intersections = raycaster.intersections;
-
-            if (intersections && intersections.length > 0) {
-                const hit = intersections.find(i => i.object.el.classList.contains("walkable"));
-                if (hit) {
-                    this.lastHit = hit.point;
-                    this.marker.setAttribute("position", {
-                        x: this.lastHit.x, 
-                        y: this.lastHit.y + 0.02, 
-                        z: this.lastHit.z
-                    });
-                    this.marker.setAttribute("visible", true);
-                } else {
-                    this.lastHit = null;
-                    this.marker.setAttribute("visible", false);
-                }
-            } else {
                 this.lastHit = null;
-                this.marker.setAttribute("visible", false);
-            }
-        },
 
-        teleport: function () {
-            if (!this.lastHit) return;
-            const rig = document.querySelector("#cameraRig");
-            if (rig) {
-                rig.setAttribute("position", {
-                    x: this.lastHit.x,
-                    y: this.lastHit.y,
-                    z: this.lastHit.z
-                });
-            }
-        }
-    });
-
-    /* -----------------------------------------------------
-        DRAG COMPONENT — UPDATED WITH SENSOR FIX
-    ----------------------------------------------------- */
-    AFRAME.registerComponent("arrastavel", {
-        schema: { controllerId: { type: "string", default: "" } },
-
-        init: function () {
-            this.controllerEl = null;
-            this.groundY = 0;
-
-            const ground = document.querySelector("a-plane");
-            if (ground) {
-                const pos = ground.getAttribute("position");
-                this.groundY = (pos && typeof pos.y === "number") ? pos.y : (pos?.y ?? 0);
-            }
-        },
-
-        update: function () {
-            this.controllerEl = this.data.controllerId
-                ? document.querySelector("#" + this.data.controllerId)
-                : null;
-        },
-
-        tick: function () {
-            if (!this.controllerEl) return;
-
-            const rightCtrl = this.controllerEl;
-            const obj = this.el.object3D;
-            const ctrlObj = rightCtrl.object3D;
-
-            if (!obj || !ctrlObj) return;
-
-            // Get controller world position and rotation
-            const ctrlPos = new THREE.Vector3();
-            ctrlObj.getWorldPosition(ctrlPos);
-            
-            const ctrlQuat = new THREE.Quaternion();
-            ctrlObj.getWorldQuaternion(ctrlQuat);
-
-            const forward = new THREE.Vector3(0, 0, -1)
-                .applyQuaternion(ctrlQuat)
-                .normalize();
-
-            // Base: object stays 1.2m in front of controller
-            const finalPos = ctrlPos.clone().add(
-                forward.clone().multiplyScalar(1.2)
-            );
-
-            // --- SENSOR FIX HERE ---
-            // Subtract 2.0 from the Y position to compensate for the flawed sensor
-            finalPos.y -= 1; 
-            finalPos.x -= 0.15;
-            // -----------------------
-
-            // FLOOR CONSTRAINT
-            // This ensures that even after subtracting 2, if it goes below ground, it snaps back up to the floor.
-            const bottomOffset = parseFloat(this.el.dataset.bottomOffset || "0");
-            finalPos.y = Math.max(finalPos.y, this.groundY + bottomOffset);
-
-            // Smooth follow position
-            obj.position.lerp(finalPos, 0.4);
-
-            // Rotation logic (Stick)
-            let ax = 0; 
-            const tracked = rightCtrl.components["tracked-controls"];
-            const gamepad = tracked?.controller?.gamepad;
-
-            if (gamepad?.axes) {
-                ax = gamepad.axes[2] ?? gamepad.axes[0] ?? 0; 
-            }
-
-            const rotSpeed = 0.05;
-            obj.rotation.y -= ax * rotSpeed; 
-        }
-    });
-
-    /* -----------------------------------------------------
-        QUEST PICK-UP SYSTEM
-    ----------------------------------------------------- */
-    AFRAME.registerComponent("quest-grab", {
-        init: function () {
-            this.isHolding = false;
-            this.heldObject = null;
-
-            this.onPress = this.onPress.bind(this);
-            this.onRelease = this.onRelease.bind(this);
-
-            this.el.addEventListener("triggerdown", this.onPress);
-            this.el.addEventListener("triggerup", this.onRelease);
-            this.el.addEventListener("abuttondown", this.onPress);
-            this.el.addEventListener("abuttonup", this.onRelease);
-        },
-
-        onPress: function () {
-            if (this.isHolding) return;
-
-            const raycaster = this.el.components.raycaster;
-            if (!raycaster || !raycaster.intersections.length) return;
-
-            const target = raycaster.intersections[0].object.el;
-            if (!target) return;
-
-            if (target.classList.contains("ui-button")) {
-                target.emit("click");
-                return;
-            }
-
-            if (!target.classList.contains("clickable")) return;
-
-            this.isHolding = true;
-            this.heldObject = target;
-
-            target.setAttribute("arrastavel", { controllerId: this.el.id });
-        },
-
-        onRelease: function () {
-            if (!this.isHolding) return;
-
-            this.isHolding = false;
-
-            if (this.heldObject) {
-                this.heldObject.removeAttribute("arrastavel");
-                
-                const bottomOffset = parseFloat(this.heldObject.dataset.bottomOffset || "0");
-                const ground = document.querySelector("a-plane");
-                let gy = 0;
-                if (ground) {
-                    const pos = ground.getAttribute("position");
-                    gy = (pos && typeof pos.y === "number") ? pos.y : (pos?.y ?? 0);
-                }
-                const curPos = this.heldObject.getAttribute("position");
-                const newY = Math.max(curPos.y, gy + bottomOffset);
-                this.heldObject.setAttribute("position", { x: curPos.x, y: newY, z: curPos.z });
-
-                this.heldObject = null;
-            }
-        }
-    });
-
-    /* -----------------------------------------------------
-        SPAWNER BUTTON
-    ----------------------------------------------------- */
-    AFRAME.registerComponent("spawner", {
-        schema: { model: { type: "string" } },
-        init: function () {
-            this.el.addEventListener("click", () => {
-                const scene = document.querySelector("a-scene");
-
-                const obj = document.createElement("a-entity");
-                obj.setAttribute("gltf-model", this.data.model);
-                obj.setAttribute("position", "0 0 -2");
-                obj.setAttribute("scale", "0.6 0.6 0.6");
-                obj.classList.add("clickable", "spawned");
-
-                obj.addEventListener("model-loaded", (ev) => {
-                    try {
-                        const threeObj = obj.object3D;
-                        threeObj.updateMatrixWorld(true);
-                        const bbox = new THREE.Box3().setFromObject(threeObj);
-                        const minY = bbox.min.y; 
-
-                        const worldOrigin = new THREE.Vector3();
-                        threeObj.getWorldPosition(worldOrigin);
-                        const originY = worldOrigin.y;
-
-                        const bottomOffset = originY - minY;
-                        obj.dataset.bottomOffset = bottomOffset.toString();
-
-                        const ground = document.querySelector("a-plane");
-                        let gy = 0;
-                        if (ground) {
-                            const pos = ground.getAttribute("position");
-                            gy = (pos && typeof pos.y === "number") ? pos.y : (pos?.y ?? 0);
-                        }
-
-                        const curPos = obj.getAttribute("position");
-                        const newY = gy + bottomOffset;
-                        obj.setAttribute("position", { x: curPos.x, y: newY, z: curPos.z });
-                    } catch (err) {
-                        console.warn("Erro ao calcular bbox do modelo:", err);
+                this.el.addEventListener("axismove", e => {
+                    const y = e.detail.axis?.[3] ?? e.detail.axis?.[1];
+                    if (y < -0.7 && !this.isAiming) {
+                        this.isAiming = true;
+                        this.el.setAttribute("raycaster", "showLine:true");
+                    } else if (y > -0.1 && this.isAiming) {
+                        this.teleport();
+                        this.isAiming = false;
+                        this.el.setAttribute("raycaster", "showLine:false");
+                        this.marker.setAttribute("visible", false);
                     }
                 });
+            },
 
-                scene.appendChild(obj);
-            });
-        }
-    });
+            tick() {
+                if (!this.isAiming) return;
+                const ray = this.el.components.raycaster;
+                if (!ray?.intersections?.length) return;
+
+                const hit = ray.intersections.find(i =>
+                    i.object.el.classList.contains("walkable")
+                );
+                if (!hit) return;
+
+                this.lastHit = hit.point;
+                this.marker.setAttribute("position", {
+                    x: hit.point.x,
+                    y: hit.point.y + 0.02,
+                    z: hit.point.z
+                });
+                this.marker.setAttribute("visible", true);
+            },
+
+            teleport() {
+                if (!this.lastHit) return;
+                document.querySelector("#cameraRig").setAttribute("position", this.lastHit);
+            }
+        });
+
+        /* -----------------------------------------------------
+           DRAG
+        ----------------------------------------------------- */
+        AFRAME.registerComponent("arrastavel", {
+            schema: { controllerId: { type: "string" } },
+
+            init() {
+                const ground = document.querySelector(".floor");
+                this.groundY = ground?.getAttribute("position")?.y ?? 0;
+            },
+
+            tick() {
+                const ctrl = document.querySelector("#" + this.data.controllerId);
+                if (!ctrl) return;
+
+                const ctrlObj = ctrl.object3D;
+                const pos = new THREE.Vector3();
+                ctrlObj.getWorldPosition(pos);
+
+                const quat = new THREE.Quaternion();
+                ctrlObj.getWorldQuaternion(quat);
+
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(quat);
+                pos.add(forward.multiplyScalar(1.2));
+
+                pos.y = Math.max(pos.y - 1, this.groundY + (this.el.dataset.bottomOffset ?? 0));
+                pos.x -= 0.09;
+
+                this.el.object3D.position.lerp(pos, 0.4);
+
+                const gp = ctrl.components["tracked-controls"]?.controller?.gamepad;
+                const ax = gp?.axes?.[2] ?? 0;
+                this.el.object3D.rotation.y -= ax * 0.05;
+            }
+        });
+
+        /* -----------------------------------------------------
+           QUEST GRAB
+        ----------------------------------------------------- */
+        AFRAME.registerComponent("quest-grab", {
+            init() {
+                this.el.addEventListener("triggerdown", () => this.grab());
+                this.el.addEventListener("triggerup", () => this.release());
+            },
+
+            grab() {
+                const ray = this.el.components.raycaster;
+                if (!ray?.intersections?.length) return;
+
+                const target = ray.intersections[0].object.el;
+
+                if (target.classList.contains("ui-button")) {
+                    target.emit("click");
+                    return;
+                }
+
+                if (!target.classList.contains("clickable")) return;
+
+                this.held = target;
+                target.setAttribute("arrastavel", { controllerId: this.el.id });
+            },
+
+            release() {
+                if (!this.held) return;
+                this.held.removeAttribute("arrastavel");
+                this.held = null;
+            }
+        });
+
+        /* -----------------------------------------------------
+           SPAWNER
+        ----------------------------------------------------- */
+        AFRAME.registerComponent("spawner", {
+            schema: { model: { type: "string" } },
+
+            init() {
+                this.el.addEventListener("click", () => {
+                    const obj = document.createElement("a-entity");
+                    obj.setAttribute("gltf-model", this.data.model);
+                    obj.setAttribute("scale", "0.6 0.6 0.6");
+                    obj.setAttribute("position", "0 0 -2");
+                    obj.classList.add("clickable");
+
+                    obj.addEventListener("model-loaded", () => {
+                        const box = new THREE.Box3().setFromObject(obj.object3D);
+                        obj.dataset.bottomOffset = -box.min.y;
+                        obj.setAttribute("position", { x: 0, y: -box.min.y, z: -2 });
+                    });
+
+                    document.querySelector("a-scene").appendChild(obj);
+                });
+            }
+        });
+
+        /* -----------------------------------------------------
+           HUD AUTO BAR
+        ----------------------------------------------------- */
+        const HUD_MODELS = [
+            { id: "chair", src: "chair.glb", scale: "0.10 0.10 0.10" },
+            { id: "table", src: "table.glb", scale: "0.02 0.02 0.02" },
+            { id: "bed", src: "bed.glb", scale: "0.10 0.10 0.10" }
+        ];
+
+        AFRAME.registerComponent("hud-bar", {
+            init() {
+                const spacing = 0.45;
+                const startX = -((HUD_MODELS.length - 1) * spacing) / 2;
+
+                HUD_MODELS.forEach((item, i) => {
+                    const el = document.createElement("a-entity");
+                    el.setAttribute("gltf-model", "#" + item.id);
+                    el.setAttribute("scale", item.scale);
+                    el.setAttribute("position", {
+                        x: startX + i * spacing,
+                        y: -0.07,
+                        z: 0.01
+                    });
+                    el.classList.add("clickable", "ui-button");
+                    el.setAttribute("spawner", "model:#" + item.id);
+                    this.el.appendChild(el);
+                });
+            }
+        });
     </script>
 </head>
 
 <body>
-    <a-scene embedded vr-mode-ui="enabled: true" raycaster="objects: .clickable" cursor="rayOrigin: mouse">
+    <a-scene embedded raycaster="objects:.clickable">
 
-    <a-assets>
-        <a-asset-item id="cadeira" src="chair.glb"></a-asset-item>
-    </a-assets>
+        <a-assets>
+            <a-asset-item id="chair" src="chair.glb"></a-asset-item>
+            <a-asset-item id="table" src="table.glb"></a-asset-item>
+            <a-asset-item id="bed" src="bed.glb"></a-asset-item>
 
-    <a-plane id="ground" class="walkable" width="20" height="20" rotation="-90 0 0" color="#6BC48C" position="0 0 0"></a-plane>
-    <a-sky color="#D0D0D0"></a-sky>
+            <img id="woodTex" src="https://cdn.aframe.io/a-painter/images/floor.jpg">
+        </a-assets>
 
-    <a-entity id="cameraRig" position="0 0 2">
-        <a-entity id="head" camera position="0 1.6 0" look-controls wasd-controls>
-            <a-entity id="hud"
-                    position="0 -0.7 -1.5"
-                    geometry="primitive: plane; width: 2; height: 0.6"
-                    material="color: black; opacity: 0.35">
+        <!-- FLOOR (BROWN-GRAY WOOD) -->
+        <a-plane class="walkable floor" rotation="-90 0 0" width="20" height="20"
+            material="src:#woodTex; repeat:6 6; color:#8A8175; roughness:0.9">
+        </a-plane>
 
-                <a-entity id="spawn-btn"
-                            gltf-model="#cadeira"
-                            class="clickable ui-button"
-                            scale="0.18 0.18 0.18"
-                            position="-0.5 -0.15 0"
-                            spawner="model: #cadeira">
+        <!-- WALLS -->
+        <a-plane position="0 1.5 -10" width="20" height="3" color="#B3B3B3"></a-plane>
+        <a-plane position="0 1.5 10" rotation="0 180 0" width="20" height="3" color="#B3B3B3"></a-plane>
+        <a-plane position="-10 1.5 0" rotation="0 90 0" width="20" height="3" color="#AAAAAA"></a-plane>
+        <a-plane position="10 1.5 0" rotation="0 -90 0" width="20" height="3" color="#AAAAAA"></a-plane>
+
+        <!-- WINDOW WITH GRID -->
+        <a-entity position="0 1.6 -9.98">
+            <!-- glass -->
+            <a-plane width="4" height="1.6" material="color:#BFE9FF; opacity:0.35; transparent:true"></a-plane>
+
+            <!-- vertical bars -->
+            <a-plane width="0.05" height="1.6" position="-1.33 0 0.01" color="#666"></a-plane>
+            <a-plane width="0.05" height="1.6" position="0 0 0.01" color="#666"></a-plane>
+            <a-plane width="0.05" height="1.6" position="1.33 0 0.01" color="#666"></a-plane>
+
+            <!-- horizontal bars -->
+            <a-plane width="4" height="0.05" position="0 0.53 0.01" color="#666"></a-plane>
+            <a-plane width="4" height="0.05" position="0 -0.53 0.01" color="#666"></a-plane>
+        </a-entity>
+
+        <a-sky color="#87CEEB"></a-sky>
+
+        <a-entity id="cameraRig">
+            <a-entity camera position="0 1.6 0">
+
+                <!-- HUD -->
+                <a-entity position="0 -0.65 -1.3" geometry="primitive:plane; width:1.4; height:0.25"
+                    material="color:black; opacity:0.35" hud-bar>
                 </a-entity>
 
             </a-entity>
+
+            <a-entity id="rightHand" laser-controls="hand:right" raycaster="objects:.clickable" quest-grab></a-entity>
+
+            <a-entity id="leftHand" laser-controls="hand:left" raycaster="objects:.walkable; far:20"
+                simple-teleport></a-entity>
         </a-entity>
-
-        <a-entity id="rightHand"
-                    laser-controls="hand: right"
-                    raycaster="objects: .clickable"
-                    quest-grab></a-entity>
-
-        <a-entity id="leftHand"
-                    laser-controls="hand: left"
-                    raycaster="objects: .walkable; far: 20; showLine: false"
-                    simple-teleport></a-entity>
-    </a-entity>
 
     </a-scene>
 </body>
+
 </html>
