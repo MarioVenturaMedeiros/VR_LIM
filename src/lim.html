@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>VR Room — Auto HUD Bar</title>
+    <title>VR — LIM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.min.js"></script>
@@ -151,7 +151,12 @@
             schema: { model: { type: "string" } },
 
             init() {
+                this.canSpawn = true;
                 this.el.addEventListener("click", () => {
+                    if (!this.canSpawn) return;
+                    this.canSpawn = false;
+                    setTimeout(() => this.canSpawn = true, 1000);
+
                     const obj = document.createElement("a-entity");
                     obj.setAttribute("gltf-model", this.data.model);
                     obj.setAttribute("scale", "0.6 0.6 0.6");
