@@ -10,6 +10,49 @@
 
     <script>
         /* -----------------------------------------------------
+           AUDIO HELPER
+        ----------------------------------------------------- */
+        function playSound(filename, { start = 0, end = 0, speed = 1 } = {}) {
+            const id = "snd-" + filename.replace(/[^a-z0-9]/gi, "_");
+            let audio = document.getElementById(id);
+            if (!audio) {
+                audio = document.createElement("audio");
+                audio.id = id;
+                audio.src = filename;
+                audio.preload = "auto";
+                document.body.appendChild(audio);
+            }
+
+            if (audio._stopTimer) {
+                clearTimeout(audio._stopTimer);
+                audio._stopTimer = null;
+            }
+
+            function doPlay() {
+                try {
+                    audio.currentTime = start;
+                    audio.playbackRate = speed;
+                } catch (e) {}
+                
+                const p = audio.play();
+                if (p && p.catch) p.catch(() => {});
+
+                if (end > start) {
+                    const durationMs = ((end - start) / speed) * 1000;
+                    audio._stopTimer = setTimeout(() => {
+                        try { audio.pause(); } catch(e) {}
+                    }, durationMs);
+                }
+            }
+
+            if (audio.readyState >= 1) {
+                doPlay();
+            } else {
+                audio.addEventListener("canplay", doPlay, { once: true });
+            }
+        }
+
+        /* -----------------------------------------------------
            SIMPLE TELEPORT
         ----------------------------------------------------- */
         AFRAME.registerComponent("simple-teleport", {
@@ -60,6 +103,7 @@
             teleport() {
                 if (!this.lastHit) return;
                 document.querySelector("#cameraRig").setAttribute("position", this.lastHit);
+                playSound("move.mp3", { start: 0.2, end: 0, speed: 1 });
             }
         });
 
@@ -154,6 +198,9 @@
                 this.canSpawn = true;
                 this.el.addEventListener("click", () => {
                     if (!this.canSpawn) return;
+                    
+                    playSound("obj.mp3", { start: 0, end: 0, speed: 1 });
+                    
                     this.canSpawn = false;
                     setTimeout(() => this.canSpawn = true, 1000);
 
@@ -209,6 +256,9 @@
 </head>
 
 <body>
+    <audio autoplay loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
     <a-scene embedded raycaster="objects:.clickable" physics="debug: false; gravity: -9.8">
 
         <a-assets>
